@@ -109,11 +109,11 @@ npx create-react-app --version
 # ******************************************************************************
 
 cd "$temp_app_path"
-npx create-react-app test-app-dist-tag --scripts-version=@latest
+npx create-react-app test-app-dist-tag --scripts-version occ-react-scripts
 cd test-app-dist-tag
 
 # Check corresponding scripts version is installed and no TypeScript is present.
-exists node_modules/react-scripts
+exists node_modules/occ-react-scripts
 ! exists node_modules/typescript
 ! exists src/index.tsx
 exists src/index.js
@@ -174,7 +174,7 @@ echo yes | npm run eject
 
 # Temporary workaround for https://github.com/facebook/create-react-app/issues/6099
 rm yarn.lock
-yarn add @babel/plugin-transform-react-jsx-source @babel/plugin-syntax-jsx @babel/plugin-transform-react-jsx @babel/plugin-transform-react-jsx-self
+yarn add @babel/plugin-transform-react-jsx-source @babel/plugin-syntax-jsx @babel/plugin-transform-react-jsx @babel/plugin-transform-react-jsx-self @babel/helper-create-regexp-features-plugin
 
 # Ensure env file still exists
 exists src/react-app-env.d.ts

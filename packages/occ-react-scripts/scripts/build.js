@@ -162,6 +162,7 @@ function build(previousFileSizes) {
     console.log();
   }
 
+  console.log(chalk.red('occ-react-app.\n'));
   console.log('Creating an optimized production build...');
 
   const compiler = webpack(config);

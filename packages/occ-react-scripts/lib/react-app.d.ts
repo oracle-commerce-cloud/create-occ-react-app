@@ -64,3 +64,16 @@ declare module '*.module.sass' {
   const classes: { readonly [key: string]: string };
   export default classes;
 }
+
+declare module '*.module.less' {
+  const classes: { readonly [key: string]: string };
+  export default classes;
+}
+
+declare module "*.json" {
+  const content: { readonly [key: string]: any };
+  export default content;
+}
+
+declare var define: ($1: any, $2?: any, $3?: any) => any;
+

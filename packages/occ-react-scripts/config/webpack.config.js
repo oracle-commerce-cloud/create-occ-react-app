@@ -51,6 +51,10 @@ const webpackDevClientEntry = require.resolve(
 // makes for a smoother build process.
 const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false';
 
+// Some apps do not need the benefits of saving a web request, so not inlining the chunk
+// makes for a smoother build process.
+const shouldEnableOptimizations = process.env.ENABLE_OPTIMIZATIONS !== 'false';
+
 const isExtendingEslintConfig = process.env.EXTEND_ESLINT === 'true';
 
 const imageInlineSizeLimit = parseInt(
@@ -66,11 +70,43 @@ const cssModuleRegex = /\.module\.css$/;
 const sassRegex = /\.(scss|sass)$/;
 const sassModuleRegex = /\.module\.(scss|sass)$/;
 
+function createWebpackEntries(webpackConfig, requireWebpackHotDevClient) {
+  return Object.entries(webpackConfig.entries).reduce(
+    (entries, [entryChunkName, entryChunkPath]) => ({
+      ...entries,
+      [entryChunkName]: [
+        // Include an alternative client for WebpackDevServer. A client's job is to
+        // connect to WebpackDevServer by a socket and get notified about changes.
+        // When you save a file, the client will either apply hot updates (in case
+        // of CSS changes), or refresh the page (in case of JS changes). When you
+        // make a syntax error, this client will display a syntax error overlay.
+        // Note: instead of the default WebpackDevServer client, we use a custom one
+        // to bring better experience for Create React App users. You can replace
+        // the line below with these two lines if you prefer the stock client:
+        // require.resolve('webpack-dev-server/client') + '?/',
+        // require.resolve('webpack/hot/dev-server'),
+        ...requireWebpackHotDevClient,
+        // Finally, this is your app's code:
+        entryChunkPath,
+        // We include the app code last so that if there is a runtime error during
+        // initialization, it doesn't blow up the WebpackDevServer client, and
+        // changing JS code would still trigger a refresh.
+      ],
+    }),
+    {}
+  );
+}
+
 // This is the production and development configuration.
 // It is focused on developer experience, fast rebuilds, and a minimal bundle.
-module.exports = function (webpackEnv) {
+module.exports = function(webpackEnv) {
   const isEnvDevelopment = webpackEnv === 'development';
   const isEnvProduction = webpackEnv === 'production';
+
+  // Source maps are resource heavy and can cause out of memory issue for large source files.
+  const isEnvDevelopmentProxy =
+    isEnvDevelopment && process.argv.includes('--debuggingProxy');
+  // process.env.LIBRARY_TARGET === 'amd' && isEnvDevelopment;
 
   // Variable used for enabling profiling in Production
   // passed into alias object. Uses a flag if passed into the build command
@@ -146,6 +182,21 @@ module.exports = function (webpackEnv) {
     return loaders;
   };
 
+  const hasMultiEntries =
+    (isEnvProduction || isEnvDevelopmentProxy) && appPackageJson.entries;
+  const entries = createWebpackEntries(
+    hasMultiEntries
+      ? appPackageJson
+      : {
+          entries: {
+            index: paths.appIndexJs,
+          },
+        },
+    [
+      isEnvDevelopment && !shouldUseReactRefresh && webpackDevClientEntry,
+    ].filter(Boolean)
+  );
+
   return {
     mode: isEnvProduction ? 'production' : isEnvDevelopment && 'development',
     // Stop compilation early in production
@@ -157,31 +208,7 @@ module.exports = function (webpackEnv) {
       : isEnvDevelopment && 'cheap-module-source-map',
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
-    entry:
-      isEnvDevelopment && !shouldUseReactRefresh
-        ? [
-            // Include an alternative client for WebpackDevServer. A client's job is to
-            // connect to WebpackDevServer by a socket and get notified about changes.
-            // When you save a file, the client will either apply hot updates (in case
-            // of CSS changes), or refresh the page (in case of JS changes). When you
-            // make a syntax error, this client will display a syntax error overlay.
-            // Note: instead of the default WebpackDevServer client, we use a custom one
-            // to bring better experience for Create React App users. You can replace
-            // the line below with these two lines if you prefer the stock client:
-            //
-            // require.resolve('webpack-dev-server/client') + '?/',
-            // require.resolve('webpack/hot/dev-server'),
-            //
-            // When using the experimental react-refresh integration,
-            // the webpack plugin takes care of injecting the dev client for us.
-            webpackDevClientEntry,
-            // Finally, this is your app's code:
-            paths.appIndexJs,
-            // We include the app code last so that if there is a runtime error during
-            // initialization, it doesn't blow up the WebpackDevServer client, and
-            // changing JS code would still trigger a refresh.
-          ]
-        : paths.appIndexJs,
+    entry: entries,
     output: {
       // The build folder.
       path: isEnvProduction ? paths.appBuild : undefined,
@@ -216,84 +243,126 @@ module.exports = function (webpackEnv) {
       // this defaults to 'window', but by setting it to 'this' then
       // module chunks which are built will work in web workers as well.
       globalObject: 'this',
+      ...(isEnvProduction
+        ? {
+            libraryTarget: process.env.LIBRARY_TARGET || 'amd',
+            filename: 'static/js/[name].[hash].js',
+            chunkFilename: 'static/js/[name].[hash].js',
+          }
+        : isEnvDevelopmentProxy
+        ? {
+            libraryTarget: 'amd',
+            filename: '[name].min.js',
+            chunkFilename: '[name].min.js',
+          }
+        : {
+            filename: '[name].[hash].js',
+            chunkFilename: '[name].[hash].js',
+          }),
+    },
+    externals: {
+      ...(appPackageJson.externalsDependencies || {}),
+      ...(isEnvProduction || isEnvDevelopmentProxy ? { jquery: 'jquery' } : {}),
     },
     optimization: {
-      minimize: isEnvProduction,
-      minimizer: [
-        // This is only used in production mode
-        new TerserPlugin({
-          terserOptions: {
-            parse: {
-              // We want terser to parse ecma 8 code. However, we don't want it
-              // to apply any minification steps that turns valid ecma 5 code
-              // into invalid ecma 5 code. This is why the 'compress' and 'output'
-              // sections only apply transformations that are ecma 5 safe
-              // https://github.com/facebook/create-react-app/pull/4234
-              ecma: 8,
+      ...// This is only used in production mode if Optimizations is has been Enabled
+      (isEnvProduction && shouldEnableOptimizations
+        ? {
+            minimizer: [
+              new TerserPlugin({
+                terserOptions: {
+                  parse: {
+                    // We want terser to parse ecma 8 code. However, we don't want it
+                    // to apply any minification steps that turns valid ecma 5 code
+                    // into invalid ecma 5 code. This is why the 'compress' and 'output'
+                    // sections only apply transformations that are ecma 5 safe
+                    // https://github.com/facebook/create-react-app/pull/4234
+                    ecma: 8,
+                  },
+                  compress: {
+                    ecma: 5,
+                    warnings: false,
+                    // Disabled because of an issue with Uglify breaking seemingly valid code:
+                    // https://github.com/facebook/create-react-app/issues/2376
+                    // Pending further investigation:
+                    // https://github.com/mishoo/UglifyJS2/issues/2011
+                    comparisons: false,
+                    // Disabled because of an issue with Terser breaking valid code:
+                    // https://github.com/facebook/create-react-app/issues/5250
+                    // Pending further investigation:
+                    // https://github.com/terser-js/terser/issues/120
+                    inline: 2,
+                  },
+                  mangle: {
+                    safari10: true,
+                  },
+                  // Added for profiling in devtools
+                  keep_classnames: isEnvProductionProfile,
+                  keep_fnames: isEnvProductionProfile,
+                  output: {
+                    ecma: 5,
+                    comments: false,
+                    // Turned on because emoji and regex is not minified properly using default
+                    // https://github.com/facebook/create-react-app/issues/2488
+                    ascii_only: true,
+                  },
+                },
+                // Enable file caching
+                cache: true,
+                sourceMap: shouldUseSourceMap,
+              }),
+              // This is only used in production mode
+              new OptimizeCSSAssetsPlugin({
+                cssProcessorOptions: {
+                  parser: safePostCssParser,
+                  map: shouldUseSourceMap
+                    ? {
+                        // `inline: false` forces the sourcemap to be output into a
+                        // separate file
+                        inline: false,
+                        // `annotation: true` appends the sourceMappingURL to the end of
+                        // the css file, helping the browser find the sourcemap
+                        annotation: true,
+                      }
+                    : false,
+                },
+                cssProcessorPluginOptions: {
+                  preset: [
+                    'default',
+                    {
+                      minifyFontValues: {
+                        removeQuotes: false,
+                      },
+                    },
+                  ],
+                },
+              }),
+            ],
+            // Keep the runtime chunk separated to enable long term caching
+            // https://twitter.com/wSokra/status/969679223278505985
+            // https://github.com/facebook/create-react-app/issues/5358
+            runtimeChunk: {
+              name: 'runtime',
             },
-            compress: {
-              ecma: 5,
-              warnings: false,
-              // Disabled because of an issue with Uglify breaking seemingly valid code:
-              // https://github.com/facebook/create-react-app/issues/2376
-              // Pending further investigation:
-              // https://github.com/mishoo/UglifyJS2/issues/2011
-              comparisons: false,
-              // Disabled because of an issue with Terser breaking valid code:
-              // https://github.com/facebook/create-react-app/issues/5250
-              // Pending further investigation:
-              // https://github.com/terser-js/terser/issues/120
-              inline: 2,
+            // Automatically split vendor and commons
+            splitChunks: {
+              chunks: 'all',
+              cacheGroups: {
+                vendors: {
+                  test: /[\\/]node_modules[\\/]/,
+                  name: 'vendors',
+                  priority: -10,
+                },
+                default: {
+                  minChunks: 2,
+                  priority: -20,
+                  name: 'commons',
+                  reuseExistingChunk: true,
+                },
+              },
             },
-            mangle: {
-              safari10: true,
-            },
-            // Added for profiling in devtools
-            keep_classnames: isEnvProductionProfile,
-            keep_fnames: isEnvProductionProfile,
-            output: {
-              ecma: 5,
-              comments: false,
-              // Turned on because emoji and regex is not minified properly using default
-              // https://github.com/facebook/create-react-app/issues/2488
-              ascii_only: true,
-            },
-          },
-          sourceMap: shouldUseSourceMap,
-        }),
-        // This is only used in production mode
-        new OptimizeCSSAssetsPlugin({
-          cssProcessorOptions: {
-            parser: safePostCssParser,
-            map: shouldUseSourceMap
-              ? {
-                  // `inline: false` forces the sourcemap to be output into a
-                  // separate file
-                  inline: false,
-                  // `annotation: true` appends the sourceMappingURL to the end of
-                  // the css file, helping the browser find the sourcemap
-                  annotation: true,
-                }
-              : false,
-          },
-          cssProcessorPluginOptions: {
-            preset: ['default', { minifyFontValues: { removeQuotes: false } }],
-          },
-        }),
-      ],
-      // Automatically split vendor and commons
-      // https://twitter.com/wSokra/status/969633336732905474
-      // https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
-      splitChunks: {
-        chunks: 'all',
-        name: false,
-      },
-      // Keep the runtime chunk separated to enable long term caching
-      // https://twitter.com/wSokra/status/969679223278505985
-      // https://github.com/facebook/create-react-app/issues/5358
-      runtimeChunk: {
-        name: entrypoint => `runtime-${entrypoint.name}`,
-      },
+          }
+        : {}),
     },
     resolve: {
       // This allows you to set a fallback for where webpack should look for modules.
@@ -346,7 +415,11 @@ module.exports = function (webpackEnv) {
       strictExportPresence: true,
       rules: [
         // Disable require.ensure as it's not a standard language feature.
-        { parser: { requireEnsure: false } },
+        {
+          parser: {
+            requireEnsure: false,
+          },
+        },
 
         // First, run the linter.
         // It's important to do this before Babel processes the JS.
@@ -418,11 +491,12 @@ module.exports = function (webpackEnv) {
                     'babel-plugin-named-asset-import',
                     'babel-preset-react-app',
                     'react-dev-utils',
-                    'react-scripts',
+                    'occ-react-scripts',
                   ]
                 ),
                 // @remove-on-eject-end
                 plugins: [
+                  require.resolve('@babel/plugin-transform-modules-commonjs'),
                   [
                     require.resolve('babel-plugin-named-asset-import'),
                     {
@@ -475,7 +549,7 @@ module.exports = function (webpackEnv) {
                     'babel-plugin-named-asset-import',
                     'babel-preset-react-app',
                     'react-dev-utils',
-                    'react-scripts',
+                    'occ-react-scripts',
                   ]
                 ),
                 // @remove-on-eject-end
@@ -672,9 +746,11 @@ module.exports = function (webpackEnv) {
             manifest[file.name] = file.path;
             return manifest;
           }, seed);
-          const entrypointFiles = entrypoints.main.filter(
-            fileName => !fileName.endsWith('.map')
-          );
+          // Add "entrypoints" key to asset manifest (#7721) but
+          // for any kind of entry point
+          const entrypointFiles = Object.values(entrypoints)
+            .reduce((fileList, values) => [...fileList, ...values], [])
+            .filter(fileName => !fileName.endsWith('.map'));
 
           return {
             files: manifestFiles,
