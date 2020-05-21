@@ -113,7 +113,7 @@ if (
   !reactScriptsLinked &&
   __dirname.indexOf(path.join('packages', 'occ-react-scripts', 'config')) !== -1
 ) {
-  const templatePath = '../cra-template/template';
+  const templatePath = '../cra-template-oracle-commerce/template';
   module.exports = {
     dotenv: resolveOwn(`${templatePath}/.env`),
     appPath: resolveApp('.'),
