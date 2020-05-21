@@ -59,9 +59,12 @@ function tryGitInit() {
 function tryGitCommit(appPath) {
   try {
     execSync('git add -A', { stdio: 'ignore' });
-    execSync('git commit -m "Initialize project using Create React App"', {
-      stdio: 'ignore',
-    });
+    execSync(
+      'git commit -m "Initialize project using Create Oracle CX Commerce React App"',
+      {
+        stdio: 'ignore',
+      }
+    );
     return true;
   } catch (e) {
     // We couldn't commit in already initialized git repo,
@@ -81,7 +84,7 @@ function tryGitCommit(appPath) {
   }
 }
 
-module.exports = function(
+module.exports = function (
   appPath,
   appName,
   verbose,

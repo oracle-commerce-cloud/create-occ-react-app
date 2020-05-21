@@ -1,0 +1,30 @@
+{
+  "name": "cra-template-oracle-commerce-typescript",
+  "version": "1.0.3",
+  "keywords": [
+    "react",
+    "template",
+    "create-react-app",
+    "oracle-commerce-cloud",
+    "DesignCodeUtility",
+    "commerce-cloud",
+    "oracleocc"
+  ],
+  "description": "This is the official TypeScript template for Create Oracle CX Commerce React App.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oracle-commerce-cloud/create-occ-react-app.git",
+    "directory": "packages/cra-template-oracle-commerce-typescript"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=10"
+  },
+  "bugs": {
+    "url": "https://github.com/facebook/create-react-app/issues"
+  },
+  "files": [
+    "template",
+    "template.json"
+  ]
+}

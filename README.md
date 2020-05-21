@@ -1,4 +1,4 @@
-# Create React App [![Build Status](https://dev.azure.com/facebook/create-react-app/_apis/build/status/facebook.create-react-app?branchName=master)](https://dev.azure.com/facebook/create-react-app/_build/latest?definitionId=1&branchName=master) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-green.svg)](https://github.com/facebook/create-react-app/blob/master/CONTRIBUTING.md)
+# Create Oracle CX Commerce React App [![Build Status](https://dev.azure.com/facebook/create-react-app/_apis/build/status/facebook.create-react-app?branchName=master)](https://dev.azure.com/facebook/create-react-app/_build/latest?definitionId=1&branchName=master) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-green.svg)](https://github.com/facebook/create-react-app/blob/master/CONTRIBUTING.md)
 
 Create React apps with no build configuration.
 
@@ -9,10 +9,23 @@ Create React App works on macOS, Windows, and Linux.<br>
 If something doesn’t work, please [file an issue](https://github.com/facebook/create-react-app/issues/new).<br>
 If you have questions or need help, please ask in our [Spectrum](https://spectrum.chat/create-react-app) community.
 
+## Use cases
+
+- 👨‍👩‍👦 Using both out of the box widgets and React based widgets.
+- 🏃 Migrating from fully integrated commerce cloud (and out of the box widgets) to headless commerce.
+
 ## Quick Overview
 
 ```sh
-npx create-react-app my-app
+npx create-react-app my-app --scripts-version occ-react-scripts --template oracle-commerce
+cd my-app
+npm start
+```
+
+or
+
+```sh
+npx create-react-app my-app --scripts-version occ-react-scripts --template oracle-commerce-typescript
 cd my-app
 npm start
 ```
