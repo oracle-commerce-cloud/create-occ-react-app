@@ -1,6 +1,6 @@
 {
   "name": "occ-react-scripts",
-  "version": "3.4.1",
+  "version": "3.4.2-alpha.0",
   "description": "Configuration and scripts for Create Oracle CX Commerce React App.",
   "repository": {
     "type": "git",
@@ -29,8 +29,8 @@
   "types": "./lib/react-app.d.ts",
   "dependencies": {
     "@babel/core": "7.9.6",
-    "@pmmmwh/react-refresh-webpack-plugin": "0.3.1",
     "@babel/plugin-transform-modules-commonjs": "^7.9.6",
+    "@pmmmwh/react-refresh-webpack-plugin": "0.3.1",
     "@svgr/webpack": "5.4.0",
     "@typescript-eslint/eslint-plugin": "^2.10.0",
     "@typescript-eslint/parser": "^2.10.0",
