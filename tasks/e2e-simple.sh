@@ -23,9 +23,10 @@ function cleanup {
   echo 'Cleaning up.'
   cd "$root_path"
   # Uncomment when snapshot testing is enabled by default:
-  # rm ./packages/react-scripts/template/src/__snapshots__/App.test.js.snap
+  # rm ./packages/occ-react-scripts/template/src/__snapshots__/App.test.js.snap
   rm -rf "$temp_app_path"
-  # Restore the original NPM and Yarn registry URLs and stop Verdaccio
+  rm -rf "$root_path"/tasks/storage || $CI
+   # Restore the original NPM and Yarn registry URLs and stop Verdaccio
   stopLocalRegistry
 }
 
@@ -63,19 +64,6 @@ set -x
 cd ..
 root_path=$PWD
 
-# Make sure we don't introduce accidental references to PATENTS.
-EXPECTED='packages/react-error-overlay/fixtures/bundle.mjs
-packages/react-error-overlay/fixtures/bundle.mjs.map
-packages/react-error-overlay/fixtures/bundle_u.mjs
-packages/react-error-overlay/fixtures/bundle_u.mjs.map
-tasks/e2e-simple.sh'
-ACTUAL=$(git grep -l PATENTS)
-if [ "$EXPECTED" != "$ACTUAL" ]; then
-  echo "PATENTS crept into some new files?"
-  diff -u <(echo "$EXPECTED") <(echo "$ACTUAL") || true
-  exit 1
-fi
-
 if hash npm 2>/dev/null
 then
   npm i -g npm@latest
@@ -88,33 +76,16 @@ yarn
 startLocalRegistry "$root_path"/tasks/verdaccio.yaml
 
 # Lint own code
-./node_modules/.bin/eslint --max-warnings 0 packages/babel-preset-react-app/
-./node_modules/.bin/eslint --max-warnings 0 packages/confusing-browser-globals/
-./node_modules/.bin/eslint --max-warnings 0 packages/create-react-app/
-./node_modules/.bin/eslint --max-warnings 0 packages/eslint-config-react-app/
-./node_modules/.bin/eslint --max-warnings 0 packages/react-dev-utils/
-./node_modules/.bin/eslint --max-warnings 0 packages/react-error-overlay/src/
-./node_modules/.bin/eslint --max-warnings 0 packages/react-scripts/
+# ./node_modules/.bin/eslint --max-warnings 0 packages/confusing-browser-globals/
+./node_modules/.bin/eslint --max-warnings 0 packages/occ-react-scripts/
 
-cd packages/react-error-overlay/
-yarn test
-if [ "$AGENT_OS" != 'Windows_NT' ]; then
-  # Flow started hanging on Windows build agents
-  yarn flow
-fi
-cd ../..
-
-cd packages/react-dev-utils/
-yarn test
-cd ../..
-
-cd packages/babel-plugin-named-asset-import/
-yarn test
-cd ../..
-
-cd packages/confusing-browser-globals/
-yarn test
-cd ../..
+# cd packages/react-dev-utils/
+# yarn test
+# cd ../..
+#
+# cd packages/confusing-browser-globals/
+# yarn test
+# cd ../..
 
 # ******************************************************************************
 # First, test the create-react-app development environment.
@@ -126,7 +97,7 @@ yarn build
 # Check for expected output
 exists build/*.html
 exists build/static/js/*.js
-exists build/static/css/*.css
+# exists build/static/css/*.css
 exists build/static/media/*.svg
 exists build/favicon.ico
 
@@ -147,7 +118,7 @@ publishToLocalRegistry
 
 # Install the app in a temporary location
 cd $temp_app_path
-npx create-react-app test-app
+npx create-react-app test-app --scripts-version occ-react-scripts --template oracle-commerce
 
 # TODO: verify we installed prerelease
 
@@ -234,7 +205,7 @@ yarn build
 # Check for expected output
 exists build/*.html
 exists build/static/js/*.js
-exists build/static/css/*.css
+# exists build/static/css/*.css
 exists build/static/media/*.svg
 exists build/favicon.ico
 
@@ -267,7 +238,7 @@ yarn build
 # Check for expected output
 exists build/*.html
 exists build/static/js/*.js
-exists build/static/css/*.css
+# exists build/static/css/*.css
 exists build/static/media/*.svg
 exists build/favicon.ico
 

@@ -23,6 +23,7 @@ function cleanup {
   echo 'Cleaning up.'
   cd "$root_path"
   rm -rf "$temp_app_path"
+  rm -rf "$root_path"/tasks/storage || $CI
   # Restore the original NPM and Yarn registry URLs and stop Verdaccio
   stopLocalRegistry
 }
@@ -109,22 +110,22 @@ npx create-react-app --version
 # ******************************************************************************
 
 cd "$temp_app_path"
-npx create-react-app test-app-dist-tag --scripts-version=@latest
+npx create-react-app test-app-dist-tag --scripts-version occ-react-scripts
 cd test-app-dist-tag
 
 # Check corresponding scripts version is installed and no TypeScript is present.
-exists node_modules/react-scripts
+exists node_modules/occ-react-scripts
 ! exists node_modules/typescript
 ! exists src/index.tsx
 exists src/index.js
 checkDependencies
 
 # ******************************************************************************
-# Test --scripts-version with a version number
+# Test --scripts-version occ-react-scripts & cra-template-oracle-commerce
 # ******************************************************************************
 
 cd "$temp_app_path"
-npx create-react-app test-app-version-number --scripts-version=1.0.17
+npx create-react-app test-app-version-number --scripts-version occ-react-scripts --template oracle-commerce
 cd test-app-version-number
 
 # Check corresponding scripts version is installed.
@@ -133,11 +134,11 @@ grep '"version": "1.0.17"' node_modules/react-scripts/package.json
 checkDependencies
 
 # ******************************************************************************
-# Test --use-npm flag
+# Test --use-npm flag with occ-react-scripts & cra-template-oracle-commerce
 # ******************************************************************************
 
 cd "$temp_app_path"
-npx create-react-app test-use-npm-flag --use-npm --scripts-version=1.0.17
+npx create-react-app test-use-npm-flag --use-npm --scripts-version occ-react-scripts --template oracle-commerce
 cd test-use-npm-flag
 
 # Check corresponding scripts version is installed.
@@ -151,11 +152,11 @@ checkDependencies
 # ******************************************************************************
 
 cd "$temp_app_path"
-npx create-react-app test-app-typescript --typescript
+npx create-react-app test-app-typescript --scripts-version occ-react-scripts --template oracle-commerce-typescript
 cd test-app-typescript
 
 # Check corresponding template is installed.
-exists node_modules/react-scripts
+exists node_modules/occ-react-scripts
 exists node_modules/typescript
 exists src/index.tsx
 exists tsconfig.json
@@ -174,7 +175,7 @@ echo yes | npm run eject
 
 # Temporary workaround for https://github.com/facebook/create-react-app/issues/6099
 rm yarn.lock
-yarn add @babel/plugin-transform-react-jsx-source @babel/plugin-syntax-jsx @babel/plugin-transform-react-jsx @babel/plugin-transform-react-jsx-self
+yarn add @babel/plugin-transform-react-jsx-source @babel/plugin-syntax-jsx @babel/plugin-transform-react-jsx @babel/plugin-transform-react-jsx-self @babel/helper-create-regexp-features-plugin
 
 # Ensure env file still exists
 exists src/react-app-env.d.ts
@@ -183,19 +184,6 @@ exists src/react-app-env.d.ts
 yarn start --smoke-test
 yarn build
 CI=true yarn test
-
-# ******************************************************************************
-# Test --scripts-version with a tarball url
-# ******************************************************************************
-
-cd "$temp_app_path"
-npx create-react-app test-app-tarball-url --scripts-version=https://registry.npmjs.org/react-scripts/-/react-scripts-1.0.17.tgz
-cd test-app-tarball-url
-
-# Check corresponding scripts version is installed.
-exists node_modules/react-scripts
-grep '"version": "1.0.17"' node_modules/react-scripts/package.json
-checkDependencies
 
 # ******************************************************************************
 # Test --scripts-version with a custom fork of react-scripts

@@ -23,10 +23,11 @@ source local-registry.sh
 function cleanup {
   echo 'Cleaning up.'
   unset BROWSERSLIST
-  ps -ef | grep 'react-scripts' | grep -v grep | awk '{print $2}' | xargs kill -9
+  ps -ef | grep 'occ-react-scripts' | grep -v grep | awk '{print $2}' | xargs kill -9
   cd "$root_path"
   # TODO: fix "Device or resource busy" and remove ``|| $CI`
   rm -rf "$temp_app_path" "$temp_module_path" || $CI
+  rm -rf "$root_path"/tasks/storage || $CI
   # Restore the original NPM and Yarn registry URLs and stop Verdaccio
   stopLocalRegistry
 }
@@ -93,7 +94,8 @@ publishToLocalRegistry
 
 # Install the app in a temporary location
 cd $temp_app_path
-npx create-react-app test-kitchensink --template=file:"$root_path"/packages/react-scripts/fixtures/kitchensink
+cp -a "$root_path"/packages/occ-react-scripts/fixtures/kitchensink $temp_app_path
+npx create-react-app test-kitchensink --scripts-version occ-react-scripts --template=file:"$temp_app_path"/kitchensink
 
 # Install the test module
 cd "$temp_module_path"
@@ -120,7 +122,7 @@ REACT_APP_SHELL_ENV_MESSAGE=fromtheshell \
 
 # Check for expected output
 exists build/*.html
-exists build/static/js/main.*.js
+exists build/static/js/index.*.js
 
 # Unit tests
 # https://facebook.github.io/jest/docs/en/troubleshooting.html#tests-are-extremely-slow-on-docker-and-or-continuous-integration-ci-server

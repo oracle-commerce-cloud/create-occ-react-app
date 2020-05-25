@@ -6,12 +6,12 @@
  */
 
 const siteConfig = {
-  title: 'Create React App',
+  title: 'Create Oracle CX Commerce React App',
   tagline: 'Set up a modern web app by running one command.',
-  url: 'https://create-react-app.dev',
+  url: 'https://create-occ-react-app.dev',
   baseUrl: '/',
-  projectName: 'create-react-app',
-  organizationName: 'facebook',
+  projectName: 'create-occ-react-app',
+  organizationName: 'oracle-commerce-cloud',
   favicon: 'img/favicon/favicon.ico',
   presets: [
     [
@@ -21,7 +21,7 @@ const siteConfig = {
           path: '../docs',
           sidebarPath: require.resolve('./sidebars.json'),
           editUrl:
-            'https://github.com/facebook/create-react-app/edit/master/docusaurus/website',
+            'https://github.com/oracle-commerce-cloud/create-occ-react-app/edit/master/docusaurus/website',
           showLastUpdateAuthor: true,
           showLastUpdateTime: true,
         },
@@ -38,9 +38,9 @@ const siteConfig = {
       indexName: 'create-react-app',
     },
     navbar: {
-      title: 'Create React App',
+      title: 'Create Oracle CX Commerce React App',
       logo: {
-        alt: 'Create React App Logo',
+        alt: 'Create Oracle CX Commerce React App Logo',
         src: 'img/logo.svg',
       },
       links: [
@@ -51,7 +51,7 @@ const siteConfig = {
           position: 'right',
         },
         {
-          href: 'https://www.github.com/facebook/create-react-app',
+          href: 'https://github.com/oracle-commerce-cloud/create-occ-react-app',
           label: 'GitHub',
           position: 'right',
         },
@@ -101,7 +101,8 @@ const siteConfig = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://www.github.com/facebook/create-react-app',
+              href:
+                'https://github.com/oracle-commerce-cloud/create-occ-react-app',
             },
           ],
         },
@@ -110,7 +111,7 @@ const siteConfig = {
         alt: 'Facebook Open Source Logo',
         src: 'img/oss_logo.png',
       },
-      copyright: `Copyright © ${new Date().getFullYear()} Facebook, Inc.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Aboulmane, Inc.`,
     },
   },
 };
