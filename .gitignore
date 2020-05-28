@@ -13,4 +13,4 @@ yarn-error.log*
 /.changelog
 .npm/
 yarn.lock
-/packages/create-react-app/yarn.lock.cached
+/packages/create-react-app/
