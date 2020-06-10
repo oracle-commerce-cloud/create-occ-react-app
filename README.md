@@ -38,7 +38,7 @@ Then open [http://localhost:3000/](http://localhost:3000/) to see your app.<br>
 When you’re ready to deploy to production, create a minified bundle with `npm run build`.
 
 <p align='center'>
-<img src='https://cdn.jsdelivr.net/gh/facebook/create-react-app@27b42ac7efa018f2541153ab30d63180f5fa39e0/screencast.svg' width='600' alt='npm start'>
+<img src='https://github.com/oracle-commerce-cloud/create-occ-react-app/blob/master/screencast.svg' width='600' alt='npm start'>
 </p>
 
 ### Get Started Immediately
@@ -65,7 +65,7 @@ _([npx](https://medium.com/@maybekatz/introducing-npx-an-npm-package-runner-55f7
 ### npm
 
 ```sh
-npm init react-app my-app
+npm init react-app my-app --scripts-version occ-react-scripts --template oracle-commerce-typescript
 ```
 
 _`npm init <initializer>` is available in npm 6+_
@@ -73,7 +73,7 @@ _`npm init <initializer>` is available in npm 6+_
 ### Yarn
 
 ```sh
-yarn create react-app my-app
+yarn create react-app my-app --scripts-version occ-react-scripts --template oracle-commerce-typescript
 ```
 
 _[`yarn create <starter-kit-package>`](https://yarnpkg.com/lang/en/docs/cli/create/) is available in Yarn 0.25+_
