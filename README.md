@@ -38,7 +38,7 @@ Then open [http://localhost:3000/](http://localhost:3000/) to see your app.<br>
 When you’re ready to deploy to production, create a minified bundle with `npm run build`.
 
 <p align='center'>
-<img src='https://raw.githubusercontent.com/oracle-commerce-cloud/create-occ-react-app/78f3f2254068829640fccc950996abf2ca493b05/screencast.svg' width='600' alt='npm start'>
+<img src='https://raw.githubusercontent.com/oracle-commerce-cloud/create-occ-react-app/master/screencast.svg' width='600' alt='npm run build'>
 </p>
 
 ### Get Started Immediately

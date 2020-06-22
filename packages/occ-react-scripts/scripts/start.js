@@ -154,7 +154,7 @@ checkBrowsers(paths.appPath, isInteractive)
         console.log();
       }
 
-      console.log(chalk.red('occ-react-app.\n'));
+      console.log(chalk.red('occ-react-app:'));
       console.log(chalk.cyan('Starting the development server...\n'));
       openBrowser(urls.localUrlForBrowser);
     });
