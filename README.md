@@ -87,6 +87,12 @@ my-app
 ├── node_modules
 ├── package.json
 ├── .gitignore
+├── platform
+│   ├── .ccc
+│   ├── global
+│   └── widget
+│       ├── widget1
+│       └── widget2
 ├── public
 │   ├── favicon.ico
 │   ├── index.html
